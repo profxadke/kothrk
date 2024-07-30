@@ -55,8 +55,8 @@ ssize_t read(int fd, void *buf, size_t count) {
               // is_reading_hidden_file = 0; // Reset flag after reading
               memset(buf, 0, sizeof(buf));
               strncpy(buf, message, count);
-              buf[len] = -1;
-              buf[len + 1] = '\0';
+              // buf[len] = -1;
+              // buf[len + 1] = '\0';
               return count; // Return the number of bytes written
            }
 
