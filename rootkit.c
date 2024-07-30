@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+// AUTHOR: @profxadke (Nikhil Aryal)
+
 // Function pointers for original system calls
 static struct dirent *(*orig_readdir)(DIR *dirp) = NULL;
 static int (*orig_unlink)(const char *pathname) = NULL;
