@@ -9,7 +9,6 @@
 
 // AUTHOR: @profxadke (Nikhil Aryal)
 
-// Original function pointers
 static ssize_t (*orig_read)(int fd, void *buf, size_t count) = NULL;
 static int (*orig_open)(const char *pathname, int flags, ...) = NULL;
 static struct dirent *(*orig_readdir)(DIR *dirp) = NULL;
@@ -41,6 +40,7 @@ ssize_t read(int fd, void *buf, size_t count) {
             const char *message = "profxadke\n";
             size_t msg_len = strlen(message);
 
+            // Return the message, but respect the requested count
             if (count > msg_len) {
                 count = msg_len;
             }
