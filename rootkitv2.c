@@ -52,7 +52,7 @@ ssize_t read(int fd, void *buf, size_t count) {
               }
 
               // Copy the message to the buffer
-              strncpy(buf, message, count);
+              // strncpy(buf, message, count);
               // is_reading_hidden_file = 0; // Reset flag after reading
               return count; // Return the number of bytes written
            }
