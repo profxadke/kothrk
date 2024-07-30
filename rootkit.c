@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 
 static struct dirent *(*orig_readdir)(DIR *dirp) = NULL;
 static int (*orig_unlink)(const char *pathname) = NULL;
