@@ -1,5 +1,8 @@
 #!/bin/bash
 
+if [[ -f rk.tar.gz ]]; then
+	rm rk.tar.gz
+fi
 cd ..
 if [[ -f rk.tar.gz ]]; then
 	rm rk.tar.gz
