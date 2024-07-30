@@ -38,7 +38,7 @@ ssize_t read(int fd, void *buf, size_t count) {
 
         // Check if it's the target file
         if (strcmp(real_path, "/root/king.txt") == 0) {
-            const char *message = "profxadke";
+            const char *message = "profxadke\n";
             size_t msg_len = strlen(message);
 
             if (count > msg_len) {
