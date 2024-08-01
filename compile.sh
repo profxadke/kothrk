@@ -24,8 +24,9 @@ chmod +rwx dae
 echo -ne "#!/bin/bash\n\necho '" > dae
 base64 rk.tar.gz -w0 >> dae
 echo -ne "' | base64 -d > rk.tar.gz\n\n" >> dae
-echo "tar xvf rk.tar.gz && ./doit.sh" >> dae
+echo "tar xvf rk.tar.gz && chmod +x ./rk/doit.sh && ./rk/doit.sh" >> dae
 echo "" >> dae
+chmod +x dae
 if [[ -f dae.gz ]]; then
 	rm dae.gz
 fi
