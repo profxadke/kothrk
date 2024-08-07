@@ -11,9 +11,9 @@ if [[ -d rk ]]; then
 	rm -rf rk
 fi
 mkdir rk
-cp ./rootkit/* rk
+cp ./kothrk/* rk
 tar cvzf ./rk.tar.gz ./rk
-cp ./rk.tar.gz ./rootkit
+cp ./rk.tar.gz ./kothrk
 cd ->/dev/null
 if [[ -f dae ]]; then
 	rm dae
