@@ -17,11 +17,6 @@
 #define KG_TEXT "profxadke\n\0"
 
 
-int randint(int min, int max) {
-    return (rand() % (max - min + 1)) + min;
-}
-
-
 void* kingMe(void* vargp) {
     for (;;) {
         sleep(0.9);
@@ -86,7 +81,6 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
     int fd;
     char buf[32];
-    // int pid = randint(100, 999);
     int pid = 333;
     pthread_t thread_id;
 
